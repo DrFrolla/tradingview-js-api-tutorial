@@ -2,7 +2,6 @@ import * as React from 'react';
 import './index.css';
 import Datafeed from './api/'
 
-
 function getLanguageFromURL() {
 	const regex = new RegExp('[\\?&]lang=([^&#]*)');
 	const results = regex.exec(window.location.search);
@@ -13,7 +12,7 @@ export class TVChartContainer extends React.PureComponent {
 
 	static defaultProps = {
 		symbol: 'Coinbase:BTC/USD',
-		interval: '15',
+		interval: '1',
 		containerId: 'tv_chart_container',
 		libraryPath: '/charting_library/',
 		chartsStorageUrl: 'https://saveload.tradingview.com',
@@ -49,7 +48,7 @@ export class TVChartContainer extends React.PureComponent {
 				"paneProperties.vertGridProperties.color": "#363c4e",
 				"paneProperties.horzGridProperties.color": "#363c4e",
 				"symbolWatermarkProperties.transparency": 90,
-				"scalesProperties.textColor" : "#AAA",
+				"scalesProperties.textColor": "#AAA",
 				"mainSeriesProperties.candleStyle.wickUpColor": '#336854',
 				"mainSeriesProperties.candleStyle.wickDownColor": '#7f323f',
 			}
@@ -67,8 +66,8 @@ export class TVChartContainer extends React.PureComponent {
 	render() {
 		return (
 			<div
-				id={ this.props.containerId }
-				className={ 'TVChartContainer' }
+				id={this.props.containerId}
+				className={'TVChartContainer'}
 			/>
 		);
 	}
