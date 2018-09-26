@@ -35,7 +35,6 @@ function unsubscribeBars(uid) {
   _subs.splice(subIndex, 1)
 }
 
-
 socket.on('connect', () => {
   console.log('===Socket connected')
 })
@@ -52,9 +51,13 @@ async function dataSocket(e) {
   // we need to send this new data to our subscribed charts
 
   const lastTicks = await socketHandle(e.dati_da_API);
+  let _lastBar = {};
+  let sub;
+  let i = 0;
+  for (const element of lastTicks) {
 
-  lastTicks.forEach(async function (element, i) {
     const data = {
+      origin: element.exchange,
       exchange: "Coinbase",
       from_sym: "USD",
       price: element.Price,
@@ -63,34 +66,33 @@ async function dataSocket(e) {
       trade_id: element.TradeId,
       ts: element.Time,
       volume: element.Volume
-    }
-    console.log('socketOr', data)
-    const channelString = `${data.sub_type}~${data.exchange}~${data.to_sym}~${data.from_sym}`
+    };
 
-    const sub = _subs.find(e => e.channelString === channelString)
+    const channelString = `${data.sub_type}~${data.exchange}~${data.to_sym}~${data.from_sym}`;
+    sub = _subs.find(e => e.channelString === channelString);
 
     if (sub) {
       // disregard the initial catchup snapshot of trades for already closed candles
-      if (data.ts < sub.lastBar.time) {
-        return
-      }
+      // if (data.ts < sub.lastBar.time) {
+      //   return
+      // }
 
-      let _lastBar = await updateBar(data, sub)
-
+      _lastBar = updateBar(data, sub, _lastBar, i);
+      console.log('_lastBar', _lastBar);
       // send the most recent bar back to TV's realtimeUpdate callback
       sub.listener(_lastBar)
 
-      // update our own record of lastBar
-      sub.lastBar = _lastBar
-    }
-
-  });
+    };
+    i++;
+  };
+  // update our own record of lastBar
+  sub.lastBar = _lastBar
 };
 
 // Take a single trade, and subscription record, return updated bar
-function updateBar(data, sub) {
+function updateBar(data, sub, _lastBar, i) {
   var lastBar = sub.lastBar
-  let resolution = sub.resolution
+  var resolution = sub.resolution
   if (resolution.includes('D')) {
     // 1 day in minutes === 1440
     resolution = 1440
@@ -103,19 +105,40 @@ function updateBar(data, sub) {
   var rounded = Math.floor(data.ts / coeff) * coeff
   // let rounded = data.ts;
   var lastBarSec = lastBar.time
-  console.log('socketOr', rounded, lastBarSec)
-  var _lastBar
 
   if (rounded > lastBarSec) {
     // create a new candle, use last close as open **PERSONAL CHOICE**
+    let high, low;
+
+    if (Object.keys(_lastBar).length > 0) {
+
+      if (data.price < _lastBar.low) {
+        low = data.price
+      } else {
+        low = _lastBar.low;
+      }
+
+      if (data.price > _lastBar.high) {
+        high = data.price
+      } else {
+        high = _lastBar.high;
+      }
+    } else {
+      console.log('_lastBar', "non c'e keys")
+      high = lastBar.close;
+      low = lastBar.close;
+    }
+
+    // console.log('_lastBar', Object.keys(_lastBar))
     _lastBar = {
       time: rounded,
       open: lastBar.close,
-      high: lastBar.close,
-      low: lastBar.close,
+      high,
+      low,
       close: data.price,
       volume: data.volume
     }
+
 
   } else {
     // update lastBar candle!
@@ -124,7 +147,7 @@ function updateBar(data, sub) {
     } else if (data.price > lastBar.high) {
       lastBar.high = data.price
     }
-
+    // console.log('_lastBar', 'update lastBar')
     lastBar.volume += data.volume
     lastBar.close = data.price
     _lastBar = lastBar

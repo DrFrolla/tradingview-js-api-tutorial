@@ -1,13 +1,14 @@
 function lastBar(data) {
-    let lastBarArray = {};
+    // let lastBarArray = {};
     let ticks = [];
 
     data.forEach(element => {
         let key = Object.keys(element);
-        console.log('ohKey', key);
-        if (key != 'bitflyer') {
-            if (element[key].ticks) {
-                element[key].ticks.forEach(el => {
+
+        if (key[0] !== 'bitflyer') {
+            if (element[key[0]].ticks) {
+                element[key[0]].ticks.forEach(el => {
+                    el.exchange = key[0];
                     ticks.push(el);
                 });
             }
@@ -16,7 +17,8 @@ function lastBar(data) {
     });
 
     let sortedTicks = sortTime(ticks);
-
+    console.log('Ticks', sortedTicks)
+    // save ticks to DB
     return sortedTicks;
 }
 
