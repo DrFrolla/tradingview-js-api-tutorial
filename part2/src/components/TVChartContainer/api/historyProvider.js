@@ -19,8 +19,8 @@ async function getBars(symbolInfo, resolution, from, to, first, limit) {
         }
     });
 
-    const data = JSON.parse(requestData);
-
+    const reqData = JSON.parse(requestData);
+    const data = reqData.candlesTV;
     if (data.Response && data.Response === 'Error') {
         console.log('CryptoCompare API error:', data.Message)
         return []
