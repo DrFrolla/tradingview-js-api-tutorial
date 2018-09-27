@@ -17,7 +17,7 @@ function lastBar(data) {
     });
 
     let sortedTicks = sortTime(ticks);
-    console.log('Ticks', sortedTicks)
+    // console.log('Ticks', sortedTicks)
     // save ticks to DB
     return sortedTicks;
 }
